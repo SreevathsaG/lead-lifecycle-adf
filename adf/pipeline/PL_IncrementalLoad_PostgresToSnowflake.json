@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "SnowflakeV2Source",
-						"query": "SELECT LAST_LOADED_UTC\nFROM PIPELINE_WATERMARK\nWHERE TABLE_NAME = 'LEADS';",
+						"query": "SELECT LAST_LOADED_UTC\nFROM LEAD_MANAGEMENT.LEADS_SCHEMA.PIPELINE_WATERMARK\nWHERE TABLE_NAME = 'LEADS';",
 						"exportSettings": {
 							"type": "SnowflakeExportCopyCommand"
 						},
@@ -83,7 +83,7 @@
 					"source": {
 						"type": "AzurePostgreSqlSource",
 						"query": {
-							"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"Leads\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
+							"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"LEAD_MANAGEMENT.LEADS_SCHEMA.LEADS\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
 							"type": "Expression"
 						},
 						"partitionOption": "None",
