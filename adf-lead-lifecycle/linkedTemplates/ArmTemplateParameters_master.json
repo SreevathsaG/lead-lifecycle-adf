@@ -11,7 +11,7 @@
 		"LS_Snowflake_password": {
 			"value": ""
 		},
-		"LS_AzureBlobStorage_Staging_connectionString": {
+		"LS_AzureBlobStorage_Staging_sasUri": {
 			"value": ""
 		},
 		"LS_AzurePostgres_properties_typeProperties_server": {

@@ -15,9 +15,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_Snowflake'"
 		},
-		"LS_AzureBlobStorage_Staging_connectionString": {
+		"LS_AzureBlobStorage_Staging_sasUri": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'LS_AzureBlobStorage_Staging'"
+			"metadata": "Secure string for 'sasUri' of 'LS_AzureBlobStorage_Staging'"
 		},
 		"LS_AzurePostgres_properties_typeProperties_server": {
 			"type": "string",
@@ -44,6 +44,19 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AzureBlobStorage_Staging')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"sasUri": "[parameters('LS_AzureBlobStorage_Staging_sasUri')]"
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LS_AzurePostgres')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -98,19 +111,6 @@
 			"properties": {
 				"type": "SelfHosted",
 				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LS_AzureBlobStorage_Staging')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('LS_AzureBlobStorage_Staging_connectionString')]"
-				}
 			},
 			"dependsOn": []
 		},
@@ -298,6 +298,144 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LS_Snowflake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_IncrementalLoad_PostgresToSnowflake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LookupOldWatermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SnowflakeV2Source",
+								"query": "SELECT LAST_LOADED_UTC\nFROM PIPELINE_WATERMARK\nWHERE TABLE_NAME = 'LEADS';",
+								"exportSettings": {
+									"type": "SnowflakeExportCopyCommand"
+								},
+								"treatDecimalAsString": false
+							},
+							"dataset": {
+								"referenceName": "DS_Snowflake_Watermark",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "LookupNewWatermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": "SELECT MAX(\"UpdatedDateUtc\") AS \"NewWatermark\"\nFROM \"Leads\";",
+								"partitionOption": "None",
+								"queryTimeout": "02:00:00"
+							},
+							"dataset": {
+								"referenceName": "DS_Postgres_Leads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "CopyIncrementalData",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "LookupOldWatermark",
+								"dependencyConditions": [
+									"Completed"
+								]
+							},
+							{
+								"activity": "LookupNewWatermark",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzurePostgreSqlSource",
+								"query": {
+									"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"Leads\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
+									"type": "Expression"
+								},
+								"partitionOption": "None",
+								"queryTimeout": "02:00:00"
+							},
+							"sink": {
+								"type": "SnowflakeV2Sink",
+								"importSettings": {
+									"type": "SnowflakeImportCopyCommand"
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "LS_AzureBlobStorage_Staging",
+									"type": "LinkedServiceReference"
+								},
+								"path": "adf-staging"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_Postgres_Leads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_Snowflake_Leads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_Snowflake_Watermark')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Postgres_Leads')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Snowflake_Leads')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureBlobStorage_Staging')]"
 			]
 		}
 	]

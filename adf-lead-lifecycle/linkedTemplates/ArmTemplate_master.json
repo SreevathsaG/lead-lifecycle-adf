@@ -15,9 +15,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_Snowflake'"
 		},
-		"LS_AzureBlobStorage_Staging_connectionString": {
+		"LS_AzureBlobStorage_Staging_sasUri": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'LS_AzureBlobStorage_Staging'"
+			"metadata": "Secure string for 'sasUri' of 'LS_AzureBlobStorage_Staging'"
 		},
 		"LS_AzurePostgres_properties_typeProperties_server": {
 			"type": "string",
@@ -72,8 +72,8 @@
 					"LS_Snowflake_password": {
 						"value": "[parameters('LS_Snowflake_password')]"
 					},
-					"LS_AzureBlobStorage_Staging_connectionString": {
-						"value": "[parameters('LS_AzureBlobStorage_Staging_connectionString')]"
+					"LS_AzureBlobStorage_Staging_sasUri": {
+						"value": "[parameters('LS_AzureBlobStorage_Staging_sasUri')]"
 					},
 					"LS_AzurePostgres_properties_typeProperties_server": {
 						"value": "[parameters('LS_AzurePostgres_properties_typeProperties_server')]"
