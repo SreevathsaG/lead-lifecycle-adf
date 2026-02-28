@@ -83,7 +83,7 @@
 					"source": {
 						"type": "AzurePostgreSqlSource",
 						"query": {
-							"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"LEADS\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
+							"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"Leads\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
 							"type": "Expression"
 						},
 						"partitionOption": "None",
@@ -116,6 +116,40 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "UpdateWatermark",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "CopyIncrementalData",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "LS_Snowflake",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "MERGE INTO LEAD_MANAGEMENT.LEADS_SCHEMA.PIPELINE_WATERMARK t\nUSING (\n  SELECT\n    'LEADS' AS TABLE_NAME,\n    TO_TIMESTAMP_NTZ('@{activity('LookupNewWatermark').output.firstRow.NewWatermark}') AS LAST_LOADED_UTC\n) s\nON t.TABLE_NAME = s.TABLE_NAME\nWHEN MATCHED THEN\n  UPDATE SET LAST_LOADED_UTC = s.LAST_LOADED_UTC\nWHEN NOT MATCHED THEN\n  INSERT (TABLE_NAME, LAST_LOADED_UTC)\n  VALUES (s.TABLE_NAME, s.LAST_LOADED_UTC);"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00",
+					"treatDecimalAsString": false
+				}
 			}
 		],
 		"annotations": []
