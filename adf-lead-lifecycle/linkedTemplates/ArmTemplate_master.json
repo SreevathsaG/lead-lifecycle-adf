@@ -1,0 +1,91 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-lead-lifecycle"
+		},
+		"LS_AzurePostgres_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_AzurePostgres'"
+		},
+		"LS_Snowflake_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_Snowflake'"
+		},
+		"LS_AzurePostgres_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "pg-lead-lifecycle-sg.postgres.database.azure.com"
+		},
+		"LS_AzurePostgres_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "LeadManagement"
+		},
+		"LS_AzurePostgres_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "pgadmin"
+		},
+		"LS_Snowflake_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "LEAD_MANAGEMENT"
+		},
+		"LS_Snowflake_properties_typeProperties_role": {
+			"type": "string",
+			"defaultValue": "ACCOUNTADMIN"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-lead-lifecycle_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_AzurePostgres_password": {
+						"value": "[parameters('LS_AzurePostgres_password')]"
+					},
+					"LS_Snowflake_password": {
+						"value": "[parameters('LS_Snowflake_password')]"
+					},
+					"LS_AzurePostgres_properties_typeProperties_server": {
+						"value": "[parameters('LS_AzurePostgres_properties_typeProperties_server')]"
+					},
+					"LS_AzurePostgres_properties_typeProperties_database": {
+						"value": "[parameters('LS_AzurePostgres_properties_typeProperties_database')]"
+					},
+					"LS_AzurePostgres_properties_typeProperties_username": {
+						"value": "[parameters('LS_AzurePostgres_properties_typeProperties_username')]"
+					},
+					"LS_Snowflake_properties_typeProperties_database": {
+						"value": "[parameters('LS_Snowflake_properties_typeProperties_database')]"
+					},
+					"LS_Snowflake_properties_typeProperties_role": {
+						"value": "[parameters('LS_Snowflake_properties_typeProperties_role')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

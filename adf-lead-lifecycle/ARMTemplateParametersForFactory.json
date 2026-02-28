@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-lead-lifecycle"
+		},
+		"LS_AzurePostgres_password": {
+			"value": ""
+		},
+		"LS_Snowflake_password": {
+			"value": ""
+		},
+		"LS_AzurePostgres_properties_typeProperties_server": {
+			"value": "pg-lead-lifecycle-sg.postgres.database.azure.com"
+		},
+		"LS_AzurePostgres_properties_typeProperties_database": {
+			"value": "LeadManagement"
+		},
+		"LS_AzurePostgres_properties_typeProperties_username": {
+			"value": "pgadmin"
+		},
+		"LS_Snowflake_properties_typeProperties_database": {
+			"value": "LEAD_MANAGEMENT"
+		},
+		"LS_Snowflake_properties_typeProperties_role": {
+			"value": "ACCOUNTADMIN"
+		}
+	}
+}
