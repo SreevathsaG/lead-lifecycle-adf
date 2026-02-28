@@ -1,0 +1,29 @@
+{
+	"name": "DS_Snowflake_Watermark",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_Snowflake",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "TABLE_NAME",
+				"type": "VARCHAR",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "LAST_LOADED_UTC",
+				"type": "TIMESTAMP_NTZ",
+				"precision": 0,
+				"scale": 9
+			}
+		],
+		"typeProperties": {
+			"schema": "LEADS_SCHEMA",
+			"table": "PIPELINE_WATERMARK"
+		}
+	}
+}
