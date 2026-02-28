@@ -57,7 +57,20 @@
 			{
 				"name": "CopyIncrementalData",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LookupOldWatermark",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "LookupNewWatermark",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -69,7 +82,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzurePostgreSqlSource",
-						"query": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"Leads\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
+						"query": {
+							"value": "SELECT\n  \"Id\",\n  \"State\",\n  \"CreatedDateUtc\",\n  \"CancellationRequestDateUtc\",\n  \"CancellationDateUtc\",\n  \"CancellationRejectionDateUtc\",\n  \"SoldEmployee\",\n  \"CancelledEmployee\",\n  \"UpdatedDateUtc\"\nFROM \"Leads\"\nWHERE \"UpdatedDateUtc\" >  '@{activity('LookupOldWatermark').output.firstRow.LAST_LOADED_UTC}'\n  AND \"UpdatedDateUtc\" <= '@{activity('LookupNewWatermark').output.firstRow.NewWatermark}';",
+							"type": "Expression"
+						},
 						"partitionOption": "None",
 						"queryTimeout": "02:00:00"
 					},
@@ -79,7 +95,14 @@
 							"type": "SnowflakeImportCopyCommand"
 						}
 					},
-					"enableStaging": false
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "LS_AzureBlobStorage_Staging",
+							"type": "LinkedServiceReference"
+						},
+						"path": "adf-staging"
+					}
 				},
 				"inputs": [
 					{
