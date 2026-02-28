@@ -11,6 +11,9 @@
 		"LS_Snowflake_password": {
 			"value": ""
 		},
+		"LS_AzureBlobStorage_Staging_connectionString": {
+			"value": ""
+		},
 		"LS_AzurePostgres_properties_typeProperties_server": {
 			"value": "pg-lead-lifecycle-sg.postgres.database.azure.com"
 		},

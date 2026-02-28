@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_Snowflake'"
 		},
+		"LS_AzureBlobStorage_Staging_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_AzureBlobStorage_Staging'"
+		},
 		"LS_AzurePostgres_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "pg-lead-lifecycle-sg.postgres.database.azure.com"
@@ -67,6 +71,9 @@
 					},
 					"LS_Snowflake_password": {
 						"value": "[parameters('LS_Snowflake_password')]"
+					},
+					"LS_AzureBlobStorage_Staging_connectionString": {
+						"value": "[parameters('LS_AzureBlobStorage_Staging_connectionString')]"
 					},
 					"LS_AzurePostgres_properties_typeProperties_server": {
 						"value": "[parameters('LS_AzurePostgres_properties_typeProperties_server')]"

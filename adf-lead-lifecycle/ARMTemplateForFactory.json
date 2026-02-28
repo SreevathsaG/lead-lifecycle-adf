@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_Snowflake'"
 		},
+		"LS_AzureBlobStorage_Staging_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_AzureBlobStorage_Staging'"
+		},
 		"LS_AzurePostgres_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "pg-lead-lifecycle-sg.postgres.database.azure.com"
@@ -193,6 +197,40 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_Snowflake_Watermark')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_Snowflake",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SnowflakeV2Table",
+				"schema": [
+					{
+						"name": "TABLE_NAME",
+						"type": "VARCHAR",
+						"precision": 0,
+						"scale": 0
+					},
+					{
+						"name": "LAST_LOADED_UTC",
+						"type": "TIMESTAMP_NTZ",
+						"precision": 0,
+						"scale": 9
+					}
+				],
+				"typeProperties": {
+					"schema": "LEADS_SCHEMA",
+					"table": "PIPELINE_WATERMARK"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Snowflake')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LS_AzurePostgres')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -246,6 +284,19 @@
 			"properties": {
 				"type": "SelfHosted",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AzureBlobStorage_Staging')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('LS_AzureBlobStorage_Staging_connectionString')]"
+				}
 			},
 			"dependsOn": []
 		}
