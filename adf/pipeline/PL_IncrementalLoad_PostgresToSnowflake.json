@@ -144,7 +144,10 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "MERGE INTO LEAD_MANAGEMENT.LEADS_SCHEMA.PIPELINE_WATERMARK t\nUSING (\n  SELECT\n    'LEADS' AS TABLE_NAME,\n    TO_TIMESTAMP_NTZ('@{activity('LookupNewWatermark').output.firstRow.NewWatermark}') AS LAST_LOADED_UTC\n) s\nON t.TABLE_NAME = s.TABLE_NAME\nWHEN MATCHED THEN\n  UPDATE SET LAST_LOADED_UTC = s.LAST_LOADED_UTC\nWHEN NOT MATCHED THEN\n  INSERT (TABLE_NAME, LAST_LOADED_UTC)\n  VALUES (s.TABLE_NAME, s.LAST_LOADED_UTC);"
+							"text": {
+								"value": "MERGE INTO LEAD_MANAGEMENT.LEADS_SCHEMA.PIPELINE_WATERMARK t\nUSING (\n  SELECT\n    'LEADS' AS TABLE_NAME,\n    TO_TIMESTAMP_NTZ('@{activity('LookupNewWatermark').output.firstRow.NewWatermark}') AS LAST_LOADED_UTC\n) s\nON t.TABLE_NAME = s.TABLE_NAME\nWHEN MATCHED THEN\n  UPDATE SET LAST_LOADED_UTC = s.LAST_LOADED_UTC\nWHEN NOT MATCHED THEN\n  INSERT (TABLE_NAME, LAST_LOADED_UTC)\n  VALUES (s.TABLE_NAME, s.LAST_LOADED_UTC);",
+								"type": "Expression"
+							}
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00",
